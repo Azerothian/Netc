@@ -11,22 +11,20 @@ namespace Netc.TestSockClient
 	class Program
 	{
 		static SocketServer _server;
-    static SocketClient _client;
+    static List<ClientTester> _clients;
 		static void Main(string[] args)
 		{
 			LogManager.OnLog += LogManager_OnLog;
 			_server = new SocketServer(6667);
 			_server.On("connect", OnServerConnect);
 			_server.On("login", OnServerLogin);
+      _clients = new List<ClientTester>();
+			
 
-			_client = new SocketClient("127.0.0.1", 6667);
-			_client.On("loginConfirm", OnClientLoginConfirm);
-
-			//for (int i = 0; i < 1; i++)
-			//{
-        var data =  new[] { DateTime.Now };
-        _client.Emit("login", data);
-			//}
+			for (int i = 0; i < 20; i++)
+			{
+        _clients.Add(new ClientTester());
+			}
 		}
 
 		static void OnServerConnect(Guid clientId, object[] message)
@@ -44,19 +42,34 @@ namespace Netc.TestSockClient
 			_server.Emit(clientId, "loginConfirm", message);
 		}
 
-		static void OnClientLoginConfirm(object[] message)
-		{
-			var dt = (DateTime)message[0];
-			var ts = DateTime.Now - dt;
-			//LogManager.Info("OnClientLoginConfirm : {0}", message);
-			LogManager.Info("OnClientLoginConfirm : {0}", ts.TotalMilliseconds);
-      var data = new[] { DateTime.Now };
-      _client.Emit("login", data);
-		}
+		
 
 		static void LogManager_OnLog(LogManager.LogType type, string message, params object[] objects)
 		{
 			Console.WriteLine("[" + type.ToString() + "] " + message, objects);
 		}
 	}
+  public class ClientTester
+  {
+    SocketClient _client;
+    public ClientTester()
+    {
+      _client = new SocketClient("127.0.0.1", 6667);
+      _client.On("loginConfirm", OnClientLoginConfirm);
+      
+      var data =  new[] { DateTime.Now };
+      _client.Emit("login", data);
+    }
+
+    void OnClientLoginConfirm(object[] message)
+    {
+      var dt = (DateTime)message[0];
+      var ts = DateTime.Now - dt;
+      //LogManager.Info("OnClientLoginConfirm : {0}", message);
+      LogManager.Info("OnClientLoginConfirm : {0}", ts.TotalMilliseconds);
+      var data = new[] { DateTime.Now };
+      _client.Emit("login", data);
+    }
+
+  }
 }

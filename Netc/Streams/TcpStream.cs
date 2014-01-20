@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 
 namespace Netc.Streams
@@ -74,7 +75,13 @@ namespace Netc.Streams
 		{
 			// Convert the string data to byte data using ASCII encoding.
 			// Begin sending the data to the remote device.
-
+      if (!_socket.Connected) //puts in a delay.. though really should verify if in connecting state...
+      {
+        do
+        {
+          Thread.Sleep(10);
+        } while (!_socket.Connected);
+      }
 			_socket.BeginSend(data, 0, data.Length, 0,
 				new AsyncCallback(EndSend), _socket);
 

@@ -13,7 +13,7 @@ namespace Netc.Packets
 	public class PacketManager<T> where T : NetworkAbstractStream<T>
 	{
 
-    public const int PacketSize = 2000;
+    public const int PacketSize = 50;
 		public delegate void OnDataReceivedDelegate(T c, byte[] data);
 		public event OnDataReceivedDelegate OnDataReceivedEvent;
 

@@ -27,13 +27,21 @@ namespace Netc.Util.Socks
 		void _client_OnDataReceivedEvent(byte[] data)
 		{
 			var obj = (SocketMessage)Bytes.ByteArrayToObject(data);
-			if (_actions.Keys.Contains(obj.MessageName))
-			{
-				foreach (var act in _actions[obj.MessageName])
-				{
-					act(obj.MessageContents);
-				}
-			}
+      if (obj != null)
+      {
+        if (_actions.Keys.Contains(obj.MessageName))
+        {
+          foreach (var act in _actions[obj.MessageName])
+          {
+            act(obj.MessageContents);
+          }
+        }
+      }
+      else
+      {
+        LogManager.Critical("Client - Invalid Data Recieved");
+
+      }
 		}
 		public void On(string message, Action<object[]> callback)
 		{

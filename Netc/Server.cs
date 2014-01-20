@@ -60,7 +60,10 @@ namespace Netc
 				_data.Add(client, pacMan);
 
 				var n = Guid.NewGuid();
-				Clients.Add(n, client);
+        lock (Clients)
+        {
+          Clients.Add(n, client);
+        }
 				if (OnClientConnectedEvent != null)
 					OnClientConnectedEvent(n);
 
@@ -74,8 +77,12 @@ namespace Netc
 		}
 		private Guid GetStreamId(T1 stream)
 		{
-			var k = Clients.Where(p => p.Value == stream).FirstOrDefault();
-			return k.Key;
+      KeyValuePair<Guid, T1> result;
+      lock (Clients)
+      {
+        result = Clients.Where(p => p.Value == stream).FirstOrDefault();
+      }
+      return result.Key;
 		}
 		public void Disconnect()
 		{
