@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netc", "Netc\Netc.csproj", "{3FDF3D47-A728-4284-986D-2E5F74458892}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netc.TestClient", "Netc.TestClient\Netc.TestClient.csproj", "{095C4599-21BA-4DA5-BF17-059C2A676D42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3FDF3D47-A728-4284-986D-2E5F74458892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FDF3D47-A728-4284-986D-2E5F74458892}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FDF3D47-A728-4284-986D-2E5F74458892}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FDF3D47-A728-4284-986D-2E5F74458892}.Release|Any CPU.Build.0 = Release|Any CPU
+		{095C4599-21BA-4DA5-BF17-059C2A676D42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{095C4599-21BA-4DA5-BF17-059C2A676D42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{095C4599-21BA-4DA5-BF17-059C2A676D42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{095C4599-21BA-4DA5-BF17-059C2A676D42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
