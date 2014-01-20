@@ -21,14 +21,14 @@ namespace Netc
 		public delegate void OnClientDisconnectDelegate(Guid clientId);
 		public event OnClientDisconnectDelegate OnClientDisconnectEvent;
 
-		Dictionary<Guid, T1> _keys;
+		public Dictionary<Guid, T1> Clients;
 		Dictionary<T1, PacketManager<T1>> _data;
 
 		T _server;
 		public Server()
 		{
 			_server = new T();
-			_keys = new Dictionary<Guid, T1>();
+			Clients = new Dictionary<Guid, T1>();
 			_data = new Dictionary<T1, PacketManager<T1>>();
 			_server.OnClientConnectedEvent += _server_OnClientConnectedEvent;
 			_server.OnClientDisconnectEvent += _server_OnClientDisconnectEvent;
@@ -39,9 +39,9 @@ namespace Netc
 			var id = GetStreamId(client);
 			lock (_data)
 			{
-				lock (_keys)
+				lock (Clients)
 				{
-					_keys.Remove(id);
+					Clients.Remove(id);
 					_data.Remove(client);
 				}
 			}
@@ -60,7 +60,7 @@ namespace Netc
 				_data.Add(client, pacMan);
 
 				var n = Guid.NewGuid();
-				_keys.Add(n, client);
+				Clients.Add(n, client);
 				if (OnClientConnectedEvent != null)
 					OnClientConnectedEvent(n);
 
@@ -74,7 +74,7 @@ namespace Netc
 		}
 		private Guid GetStreamId(T1 stream)
 		{
-			var k = _keys.Where(p => p.Value == stream).FirstOrDefault();
+			var k = Clients.Where(p => p.Value == stream).FirstOrDefault();
 			return k.Key;
 		}
 		public void Disconnect()
@@ -84,7 +84,24 @@ namespace Netc
 
 		public void Send(Guid c, byte[] data)
 		{
-			_data[_keys[c]].Send(data);
+			_data[Clients[c]].Send(data);
+		}
+		public void Send(Guid[] ClientsKeys, byte[] data)
+		{
+			foreach (var c in ClientsKeys)
+			{
+				if (_data[Clients[c]] != null)
+				{
+					_data[Clients[c]].Send(data);
+				}
+			}
+		}
+		public void Send(byte[] data)
+		{
+			foreach (var c in Clients.Keys)
+			{
+				_data[Clients[c]].Send(data);
+			}
 		}
 
 		public void Report()

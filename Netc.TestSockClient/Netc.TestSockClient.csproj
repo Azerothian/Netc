@@ -4,16 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3FDF3D47-A728-4284-986D-2E5F74458892}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{23415B27-92B0-442F-913D-C5E1AE8555AF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Netc</RootNamespace>
-    <AssemblyName>Netc</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>Netc.TestSockClient</RootNamespace>
+    <AssemblyName>Netc.TestSockClient</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -35,29 +36,22 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Abstracts\Delegates.cs" />
-    <Compile Include="Client.cs" />
-    <Compile Include="Packets\Packet.cs" />
-    <Compile Include="Packets\PacketDescription.cs" />
-    <Compile Include="Packets\PacketList.cs" />
-    <Compile Include="Packets\PacketManager.cs" />
-    <Compile Include="Server.cs" />
-    <Compile Include="Servers\TcpServer.cs" />
-    <Compile Include="Util\Socks\SocketClient.cs" />
-    <Compile Include="Util\Socks\SocketMessage.cs" />
-    <Compile Include="Util\Socks\SocketServer.cs" />
-    <Compile Include="Util\Bytes.cs" />
-    <Compile Include="Util\CRC.cs" />
-    <Compile Include="Util\LogManager.cs" />
-    <Compile Include="Abstracts\NetworkAbstractServer.cs" />
-    <Compile Include="Abstracts\NetworkAbstractStream.cs" />
-    <Compile Include="Streams\TcpStream.cs" />
-    <Compile Include="Streams\UdpStream.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Netc\Netc.csproj">
+      <Project>{3fdf3d47-a728-4284-986d-2e5f74458892}</Project>
+      <Name>Netc</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

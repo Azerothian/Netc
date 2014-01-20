@@ -140,7 +140,7 @@ namespace Netc.Packets
 			}
 			if (sendComplete)
 			{
-				LogManager.Info("processSendQueue - start ");
+				//LogManager.Info("processSendQueue - start ");
 				processSendQueue();
 			}
 			//}
@@ -170,7 +170,7 @@ namespace Netc.Packets
 				}
 			}
 			sendComplete = true;
-			LogManager.Info("processSendQueue - finished ");
+			//LogManager.Info("processSendQueue - finished ");
 
 		}
 
