@@ -45,6 +45,40 @@ namespace Netc.Packets
 			c.Flush();
 			Sent = true;
 		}
+    public static Packet ReadPacket(byte[] c)
+    {
+      if (c.Length > HeaderSize)
+      {
+        byte check = (byte)c[0];
+        if (check == PacketDescriptions.Packet)
+        {
+          //byte[] _header = new byte[9];
+          //c.Read(_header, 0, 9);
+          //c.Position = 1;
+          if (c[9] == PacketDescriptions.PacketSeparator)
+          {
+            // Process Packet
+            var packet = new Packet();
+            packet.PacketListId = BitConverter.ToInt16(new byte[] { c[1],c[2] }, 0);
+
+            packet.PacketIndex = BitConverter.ToInt16(new byte[] { c[3], c[4] }, 0);
+            packet.PacketSize = BitConverter.ToInt16(new byte[] { c[5], c[6] }, 0);
+
+            packet.TotalPackets = BitConverter.ToInt16(new byte[] { c[7], c[8] }, 0);
+
+             byte[] b = new byte[c.Length - 10];
+             Buffer.BlockCopy(c, 10, b, 0, b.Length);
+             packet.PacketContents = b;
+             return packet;
+          }
+        }
+      }
+      return null;
+
+    }
+
+
+
 		public static Packet ReadPacket(MemoryStream c)
 		{
 			if (c.Length > HeaderSize)

@@ -12,6 +12,8 @@ namespace Netc.Packets
 {
 	public class PacketManager<T> where T : NetworkAbstractStream<T>
 	{
+
+    public const int PacketSize = 2000;
 		public delegate void OnDataReceivedDelegate(T c, byte[] data);
 		public event OnDataReceivedDelegate OnDataReceivedEvent;
 
@@ -37,18 +39,20 @@ namespace Netc.Packets
 		{
 			do
 			{
+
 				ProcessBuffer();
 				if (_dataStack.Count > 0 || _buffer.Length > 0)
 				{
 					Report();
-					Thread.Sleep(10);
 				}
 				else
 				{
-					Thread.Sleep(100);
-				}
+					Thread.Sleep(10);
+        }
 
-			} while (_running);
+
+
+      } while (_running);
 
 		}
 		public void Report()
@@ -73,34 +77,36 @@ namespace Netc.Packets
 		}
 		public void ProcessBuffer()
 		{
+     
 			lock (_buffer)
 			{
-				var newStack = Stack.Synchronized(_dataStack);
+        Stack newStack = null;
+        lock (_dataStack)
+        {
+          newStack = Stack.Synchronized(_dataStack);
+        }
 				if (newStack.Count > 0)
 				{
 					byte[] r = (byte[])newStack.Pop();
-					_buffer.Position = _buffer.Length;
-					_buffer.Write(r, 0, r.Length);
-					_buffer.Position = 0;
+          var p = Packet.ReadPacket(r);
+          if (p != null)
+          {
+            lock (_recieved)
+            {
+              if (!_recieved.ContainsKey(p.PacketListId))
+              {
+                var newList = new PacketList(p.PacketListId, PacketSize, p.TotalPackets);
+                newList.PacketListCompleteEvent += newList_PacketListCompleteEvent;
+                _recieved.Add(p.PacketListId, newList);
+              }
+              _recieved[p.PacketListId].AddPacket(p);
+            }
+          }
 				}
 
 
 
-				var p = Packet.ReadPacket(_buffer);
-
-				if (p != null)
-				{
-					lock (_recieved)
-					{
-						if (!_recieved.ContainsKey(p.PacketListId))
-						{
-							var newList = new PacketList(p.PacketListId, -1, p.TotalPackets);
-							newList.PacketListCompleteEvent += newList_PacketListCompleteEvent;
-							_recieved.Add(p.PacketListId, newList);
-						}
-						_recieved[p.PacketListId].AddPacket(p);
-					}
-				}
+				
 			}
 
 		}
@@ -135,7 +141,7 @@ namespace Netc.Packets
 			packetListIncrement++;
 			lock (_sent)
 			{
-				_sent.Add(packetListIncrement, new PacketList(packetListIncrement, 50));
+        _sent.Add(packetListIncrement, new PacketList(packetListIncrement, PacketSize));
 				_sent[packetListIncrement].CreatePacketList(arr);
 			}
 			if (sendComplete)

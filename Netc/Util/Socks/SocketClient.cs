@@ -9,10 +9,10 @@ namespace Netc.Util.Socks
 	public class SocketClient
 	{
 		Client<TcpStream> _client;
-		Dictionary<string, List<Action<object>>> _actions;
+		Dictionary<string, List<Action<object[]>>> _actions;
 		public SocketClient(string ip, int port)
 		{
-			_actions = new Dictionary<string, List<Action<object>>>();
+			_actions = new Dictionary<string, List<Action<object[]>>>();
 			_client = new Client<TcpStream>();
 			_client.OnDataReceivedEvent += _client_OnDataReceivedEvent;
 			_client.OnClientConnectedEvent += _client_OnClientConnectedEvent;
@@ -35,19 +35,19 @@ namespace Netc.Util.Socks
 				}
 			}
 		}
-		public void On(string message, Action<object> callback)
+		public void On(string message, Action<object[]> callback)
 		{
 			if (!_actions.Keys.Contains(message))
 			{
-				_actions.Add(message, new List<Action<object>>());
+				_actions.Add(message, new List<Action<object[]>>());
 			}
 			_actions[message].Add(callback);
 		}
-		public void Emit(string messageName, object messageContents)
+		public void Emit<T>(string messageName,  params T[] messageContents)
 		{
 			SocketMessage sm = new SocketMessage();
 			sm.MessageName = messageName;
-			sm.MessageContents = messageContents;
+      sm.MessageContents = messageContents.Cast<object>().ToArray();
 
 			var data = Bytes.ObjectToByteArray(sm);
 			_client.Send(data);

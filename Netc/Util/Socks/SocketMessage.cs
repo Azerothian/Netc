@@ -8,7 +8,7 @@ namespace Netc.Util.Socks
 	[Serializable]
 	public class SocketMessage
 	{
-		public string MessageName;
-		public object MessageContents;
+    public string MessageName { get; set; }
+    public object[] MessageContents { get; set; }
 	}
 }

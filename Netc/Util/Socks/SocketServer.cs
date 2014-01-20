@@ -10,7 +10,7 @@ namespace Netc.Util.Socks
 	public class SocketServer
 	{
 		private Server<TcpServer, TcpStream> _server;
-		Dictionary<string, List<Action<Guid, object>>> _actions;
+		Dictionary<string, List<Action<Guid, object[]>>> _actions;
 
 		public Guid[] Clients { 
 			get {
@@ -21,7 +21,7 @@ namespace Netc.Util.Socks
 		public SocketServer(int port)
 		{
 			_server = new Server<TcpServer, TcpStream>();
-			_actions = new Dictionary<string, List<Action<Guid, object>>>();
+			_actions = new Dictionary<string, List<Action<Guid, object[]>>>();
 			_server.OnDataReceivedEvent +=_server_OnDataReceivedEvent;
 			_server.OnClientConnectedEvent += _server_OnClientConnectedEvent;
 			_server.OnClientDisconnectEvent += _server_OnClientDisconnectEvent;
@@ -59,16 +59,16 @@ namespace Netc.Util.Socks
 			}
 		}
 
-		public void On(string message, Action<Guid, object> callback)
+		public void On(string message, Action<Guid, object[]> callback)
 		{
 			if (!_actions.Keys.Contains(message))
 			{
-				_actions.Add(message, new List<Action<Guid, object>>());
+				_actions.Add(message, new List<Action<Guid, object[]>>());
 			}
 			_actions[message].Add(callback);
 		}
 
-		public void Emit(Guid client, string messageName, object messageContents)
+    public void Emit(Guid client, string messageName, params object[] messageContents)
 		{
 			SocketMessage sm = new SocketMessage();
 			sm.MessageName = messageName;
@@ -77,7 +77,7 @@ namespace Netc.Util.Socks
 			var data = Bytes.ObjectToByteArray(sm);
 			_server.Send(client, data);
 		}
-		public void Emit(Guid[] clients, string messageName, object messageContents)
+		public void Emit(Guid[] clients, string messageName, params object[] messageContents)
 		{
 			SocketMessage sm = new SocketMessage();
 			sm.MessageName = messageName;
@@ -86,7 +86,7 @@ namespace Netc.Util.Socks
 			var data = Bytes.ObjectToByteArray(sm);
 			_server.Send(clients, data);
 		}
-		public void Emit(string messageName, object messageContents)
+    public void Emit(string messageName, params object[] messageContents)
 		{
 			SocketMessage sm = new SocketMessage();
 			sm.MessageName = messageName;
