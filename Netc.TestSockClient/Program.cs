@@ -23,7 +23,7 @@ namespace Netc.TestSockClient
 
 			for (int i = 0; i < 1000; i++)
 			{
-				_client.Emit("login", DateTime.Now);
+				_client.Emit("login", i);
 			}
 		}
 
@@ -40,10 +40,10 @@ namespace Netc.TestSockClient
 
 		static void OnClientLoginConfirm(object message)
 		{
-			var dt = (DateTime)message;
-			var ts = DateTime.Now - dt;
-
-			LogManager.Info("OnClientLoginConfirm : {0}", ts.TotalMilliseconds);
+			//var dt = (DateTime)message;
+			//var ts = DateTime.Now - dt;
+			LogManager.Info("OnClientLoginConfirm : {0}", message);
+			//LogManager.Info("OnClientLoginConfirm : {0}", ts.TotalMilliseconds);
 		}
 
 		static void LogManager_OnLog(LogManager.LogType type, string message, params object[] objects)
