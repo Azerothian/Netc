@@ -12,8 +12,11 @@ namespace Netc.Packets
 		public delegate void PacketListCompleteDelegate(PacketList list, byte[] data);
 		public event PacketListCompleteDelegate PacketListCompleteEvent;
 
-
-
+		public short PacketListId = -1; //2
+		public short TotalPackets = -1; // 2
+		public short PacketSize = 50; // 2
+		public byte[] CRC = null;
+		public short TotalSize = 0;
 		private byte[] _packetContents = null;
 		private List<Packet> _packets;
 
@@ -48,10 +51,6 @@ namespace Netc.Packets
 			TotalPackets = totalPackets;
 		}
 
-		public const int HeaderSize = 6;
-		public short PacketListId = -1; //2
-		public short TotalPackets = -1; // 2
-		public short PacketSize = 50; // 2
 
 
 		public short CurrentTotalPackets
@@ -79,6 +78,32 @@ namespace Netc.Packets
 			{
 				return false;
 			}
+			if (TotalSize == 0)
+			{
+				TotalSize = p.TotalSize;
+
+			}
+			else
+			{
+				if (p.TotalSize != TotalSize)
+				{
+					throw new Exception("Total Size of Data from this packet does not match the list");
+
+				}
+			}
+
+			if (CRC == null)
+			{
+				CRC = p.CRC;
+			}
+			else
+			{
+				if (!CRC.SequenceEqual(p.CRC))
+				{
+					throw new Exception("CRC Validation failed");
+				}
+
+			}
 			_packets.Add(p);
 			if (ReceivedAllPackets)
 			{
@@ -86,6 +111,7 @@ namespace Netc.Packets
 				return true;
 			}
 			return false;
+
 		}
 		public bool ReceivedAllPackets
 		{
@@ -109,7 +135,7 @@ namespace Netc.Packets
 				foreach (var p in _packets.OrderBy(d => d.PacketIndex))
 				{
 					//LogManager.Info(String.Format("Assembling Index {0}, Length {1}, CRC {2}", p.PacketIndex, p.PacketContents.Length, BitConverter.ToString(CRC.CalculateCRC(p.PacketContents))));
-					ms.Write(p.PacketContents, 0, p.PacketContents.Length);
+					ms.Write(p.Contents, 0, p.Contents.Length);
 				}
 			}
 			ms.Position = 0;
@@ -134,6 +160,8 @@ namespace Netc.Packets
 			if (_totalPackets > short.MaxValue)
 				throw new Exception("Too much data to send in one packet, maybe increase your packetsize or decrease the amount of data you are trying to send at once. (3.999877930618823 Gb is the Max amount you can send in one packet list)");
 			short index = 0;
+			CRC = Util.CRC.CalculateCRC(data);
+
 			for (int i = 0; i < data.Length; i = i + PacketSize)
 			{
 				short currentSize = PacketSize;
@@ -146,7 +174,7 @@ namespace Netc.Packets
 
 				byte[] _packetContents = new byte[currentSize];
 				Buffer.BlockCopy(data, i, _packetContents, 0, currentSize);
-				_packets.Add(new Packet(PacketListId, index, (short)_totalPackets, _packetContents));
+				_packets.Add(new Packet(PacketListId, index, (short)_totalPackets, (short)data.Length, _packetContents, CRC));
 				index++;
 			}
 		}

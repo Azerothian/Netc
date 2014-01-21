@@ -22,7 +22,7 @@ namespace Netc.Packets
 
 		bool _running = true;
 		T _stream;
-		Stack _dataStack = new Stack();
+		//Stack _dataStack = new Stack();
 		MemoryStream _buffer = new MemoryStream();
 
 		Thread _processor;
@@ -41,7 +41,7 @@ namespace Netc.Packets
 			{
 
 				ProcessBuffer();
-				if (_dataStack.Count > 0 || _buffer.Length > 0)
+				if (_buffer.Length >= Packet.HeaderSize)
 				{
 					Report();
 				}
@@ -67,12 +67,10 @@ namespace Netc.Packets
 		}
 		void stream_OnMessageReceivedEvent(T c, int bytesReceived)
 		{
-			lock (_dataStack)
-			{
+
 				byte[] data = new byte[bytesReceived];
 				c.Read(data, 0, bytesReceived);
-				_dataStack.Push(data);
-			}
+				_buffer.Write(data, 0, bytesReceived);
 
 		}
 		public void ProcessBuffer()
@@ -80,15 +78,10 @@ namespace Netc.Packets
      
 			lock (_buffer)
 			{
-        Stack newStack = null;
-        lock (_dataStack)
-        {
-          newStack = Stack.Synchronized(_dataStack);
-        }
-				if (newStack.Count > 0)
+
+				if(_buffer.Length >= 67)
 				{
-					byte[] r = (byte[])newStack.Pop();
-          var p = Packet.ReadPacket(r);
+          var p = Packet.ReadPacket(_buffer);
           if (p != null)
           {
             lock (_recieved)
@@ -103,13 +96,13 @@ namespace Netc.Packets
             }
           }
 				}
+			}
 
 
 
 				
 			}
 
-		}
 
 		void newList_PacketListCompleteEvent(PacketList list, byte[] data)
 		{
