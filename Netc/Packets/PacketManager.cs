@@ -142,15 +142,20 @@ namespace Netc.Packets
     {
       lock (_sent)
       {
-        foreach (var k in _sent.Keys)
-        {
-          var p = _sent[k].Packets.Where(i => !i.Sent).FirstOrDefault();
-          if (p != null)
-          {
-            //LogManager.Info(String.Format("Assembling Index {0}, Length {1}, CRC {2}", p.PacketIndex, p.PacketContents.Length, BitConverter.ToString(CRC.CalculateCRC(p.PacketContents))));
-            p.WritePacket(_stream);
-          }
-        }
+				
+					foreach (var k in _sent.Keys)
+					{
+						var p = _sent[k].Packets.Where(i => !i.Sent).FirstOrDefault();
+						if (p != null)
+						{
+							//LogManager.Info(String.Format("Assembling Index {0}, Length {1}, CRC {2}", p.PacketIndex, p.PacketContents.Length, BitConverter.ToString(CRC.CalculateCRC(p.PacketContents))));
+							lock (_stream)
+							{
+								p.WritePacket(_stream);
+							}
+						}
+					
+				}
 
 
         var e = _sent.Where(u => u.Value.Packets.Where(t => t.Sent).Count() == u.Value.Packets.Count).ToArray();

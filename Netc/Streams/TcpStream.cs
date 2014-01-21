@@ -145,7 +145,7 @@ namespace Netc.Streams
 				{
           LogManager.Info("EndReceive {0}", bytesRead);
 					WriteToIncomingStream(state.Buffer, 0, bytesRead);
-          WriteToIncomingStream((byte)99);
+          //WriteToIncomingStream((byte)99);
 					// Get the rest of the data.
 					client.BeginReceive(state.Buffer, 0, receiveBufferSize, 0, EndReceive, state);
 					if (OnMessageReceivedEvent != null)

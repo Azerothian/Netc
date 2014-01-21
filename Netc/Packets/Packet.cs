@@ -97,7 +97,7 @@ namespace Netc.Packets
           if (stream.Length <= i + HeaderSize + packet.PacketSize + 1)
             break;
 
-          stream.Position = i + HeaderSize + packet.PacketSize ;
+          stream.Position = i + HeaderSize + packet.PacketSize - 1 ;
           var endCheck = stream.ReadByte();
           if (endCheck != PacketDescriptions.PacketEnd)
           {

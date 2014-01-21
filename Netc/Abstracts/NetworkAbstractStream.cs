@@ -16,45 +16,6 @@ namespace Netc.Abstracts
     private MemoryManager _incomingMemoryStream = new MemoryManager();
     private MemoryManager _outgoingMemoryStream = new MemoryManager();
 
-		//public MemoryStream IncomingMemoryStream
-		//{
-		//	get
-		//	{
-		//		lock(_incomingLock)
-		//		{
-		//			return _incomingMemoryStream;
-		//		}
-		//	}
-		//	set
-		//	{
-		//		lock (_incomingLock)
-		//		{
-		//			_incomingMemoryStream = value;
-		//		}
-
-		//	}
-		//}
-		//public MemoryStream OutgoingMemoryStream
-		//{
-		//	get
-		//	{
-		//		lock (_outgoingLock)
-		//		{
-		//			return _outgoingMemoryStream;
-		//		}
-		//	}
-		//	set
-		//	{
-		//		lock (_outgoingLock)
-		//		{
-		//			_outgoingMemoryStream = value;
-		//		}
-		//	}
-		//}
-    //protected object _incomingLock = 1;
-    //protected object _outgoingLock = 1;
-
-
 		/// <summary>
 		/// Occurs when [on connecting event].
 		/// </summary>

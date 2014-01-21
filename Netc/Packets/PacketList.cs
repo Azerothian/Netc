@@ -138,7 +138,6 @@ namespace Netc.Packets
 					ms.Write(p.Contents, 0, p.Contents.Length);
 				}
 			}
-			ms.Position = 0;
 			_packetContents = ms.ToArray();
 			if (PacketListCompleteEvent != null)
 			{
