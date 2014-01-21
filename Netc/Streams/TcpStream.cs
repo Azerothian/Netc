@@ -14,7 +14,7 @@ namespace Netc.Streams
 {
 	public class TcpStream : NetworkAbstractStream<TcpStream>
 	{
-		private const int receiveBufferSize = 256;
+		private const int receiveBufferSize = 512;
 		private Socket _socket;
 		/// <summary>
 		/// 
@@ -82,8 +82,7 @@ namespace Netc.Streams
           Thread.Sleep(10);
         } while (!_socket.Connected);
       }
-			_socket.BeginSend(data, 0, data.Length, 0,
-				new AsyncCallback(EndSend), _socket);
+			_socket.BeginSend(data, 0, data.Length, 0, EndSend, _socket);
 
 		
 		}
@@ -117,8 +116,7 @@ namespace Netc.Streams
 				// Begin receiving the data from the remote device.
 				StateObject state = new StateObject(receiveBufferSize);
 				state.ServerSocket = _socket;
-				_socket.BeginReceive(state.Buffer, 0, receiveBufferSize, 0,
-					new AsyncCallback(EndReceive), state);
+				_socket.BeginReceive(state.Buffer, 0, receiveBufferSize, 0, EndReceive, state);
 			}
 			catch (Exception e)
 			{
@@ -145,10 +143,11 @@ namespace Netc.Streams
 				catch { }
 				if (bytesRead > 0)
 				{
+          LogManager.Info("EndReceive {0}", bytesRead);
 					WriteToIncomingStream(state.Buffer, 0, bytesRead);
+          WriteToIncomingStream((byte)99);
 					// Get the rest of the data.
-					client.BeginReceive(state.Buffer, 0, receiveBufferSize, 0,
-						new AsyncCallback(EndReceive), state);
+					client.BeginReceive(state.Buffer, 0, receiveBufferSize, 0, EndReceive, state);
 					if (OnMessageReceivedEvent != null)
 					{
 						//Fire Recieve Event Here

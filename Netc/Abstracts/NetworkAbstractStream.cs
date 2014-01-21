@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Netc.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,8 +13,8 @@ namespace Netc.Abstracts
 	public abstract class NetworkAbstractStream<T> : Stream
 		where T : NetworkAbstractStream<T>
 	{
-		private MemoryStream _incomingMemoryStream = new MemoryStream();
-		private MemoryStream _outgoingMemoryStream = new MemoryStream();
+    private MemoryManager _incomingMemoryStream = new MemoryManager();
+    private MemoryManager _outgoingMemoryStream = new MemoryManager();
 
 		//public MemoryStream IncomingMemoryStream
 		//{
@@ -50,8 +51,8 @@ namespace Netc.Abstracts
 		//		}
 		//	}
 		//}
-		protected object _incomingLock = 1;
-		protected object _outgoingLock = 1;
+    //protected object _incomingLock = 1;
+    //protected object _outgoingLock = 1;
 
 
 		/// <summary>
@@ -179,7 +180,7 @@ namespace Netc.Abstracts
 
 			byte[] data = null;
 
-			lock (_outgoingLock)
+      lock (_outgoingMemoryStream)
 			{
 
 				if (_outgoingMemoryStream.Length > 0)
@@ -187,9 +188,7 @@ namespace Netc.Abstracts
 					data = new byte[_outgoingMemoryStream.Length];
 					_outgoingMemoryStream.Position = 0;
 					_outgoingMemoryStream.Read(data, 0, (int)_outgoingMemoryStream.Length);
-					//TODO: Do really need this... my mind says so. but am i crazy? is to clear the mem stream so we dont have a massive amount of data in the ram...
-					_outgoingMemoryStream.Close();
-					_outgoingMemoryStream = new MemoryStream();
+          _outgoingMemoryStream.Clear();
 				}
 			}
 			if(data != null)
@@ -224,21 +223,11 @@ namespace Netc.Abstracts
 		/// <exception cref="T:System.ObjectDisposedException">Methods were called after the stream was closed. </exception>
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			lock (_incomingLock)
+      lock (_incomingMemoryStream)
 			{
 				_incomingMemoryStream.Position = 0;
-				var cnt = _incomingMemoryStream.Read(buffer, offset, count);
-				int amountleft = (int)(_incomingMemoryStream.Length - _incomingMemoryStream.Position);
-				var newMs = new MemoryStream();
-				if (amountleft > 0)
-				{
-					byte[] data = new byte[amountleft];
-					_incomingMemoryStream.Read(data, 0, amountleft);
-					newMs.Write(data, 0, data.Length);
-				}
-				_incomingMemoryStream.Close();
-				_incomingMemoryStream = newMs;
-
+        var cnt =_incomingMemoryStream.Read(buffer, 0, count);
+        _incomingMemoryStream.Remove(0, count);
 				return cnt;
 			}
 		}
@@ -251,7 +240,7 @@ namespace Netc.Abstracts
 		/// <returns></returns>
 		public int Peek(byte[] buffer, int offset, int count)
 		{
-			lock (_incomingLock)
+      lock (_incomingMemoryStream)
 			{
 				var cnt = _incomingMemoryStream.Read(buffer, offset, count);
 				_incomingMemoryStream.Position = 0;
@@ -279,7 +268,7 @@ namespace Netc.Abstracts
 		/// <exception cref="T:System.ObjectDisposedException">Methods were called after the stream was closed. </exception>
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			lock (_outgoingLock)
+      lock (_outgoingMemoryStream)
 			{
 				_outgoingMemoryStream.Write(buffer, offset, count);
 			}
@@ -288,11 +277,18 @@ namespace Netc.Abstracts
 
 		public void WriteToIncomingStream(byte[] buffer, int offset, int count)
 		{
-			lock (_incomingLock)
+      lock (_incomingMemoryStream)
 			{
 				_incomingMemoryStream.Write(buffer, offset, count);
 			}
 		}
+    public void WriteToIncomingStream(byte buffer)
+    {
+      lock (_incomingMemoryStream)
+      {
+        _incomingMemoryStream.WriteByte(buffer);
+      }
+    }
 		/// <summary>
 		/// When overridden in a derived class, gets the length in bytes of the stream.
 		/// </summary>
@@ -305,8 +301,10 @@ namespace Netc.Abstracts
 		{
 			get
 			{
-				lock (_incomingLock)
-				{ return _incomingMemoryStream.Length; }
+        lock (_incomingMemoryStream)
+				{ 
+          return _incomingMemoryStream.Length; 
+        }
 			}
 		}
 

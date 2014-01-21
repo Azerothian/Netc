@@ -82,6 +82,10 @@ namespace Netc
       {
         result = Clients.Where(p => p.Value == stream).FirstOrDefault();
       }
+      if (result.Key == Guid.Empty)
+      {
+        throw new Exception("no key should be empty");
+      }
       return result.Key;
 		}
 		public void Disconnect()

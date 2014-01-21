@@ -21,7 +21,7 @@ namespace Netc.TestSockClient
       _clients = new List<ClientTester>();
 			
 
-			for (int i = 0; i < 20; i++)
+			for (int i = 0; i < 1; i++)
 			{
         _clients.Add(new ClientTester());
 			}

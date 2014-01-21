@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Netc.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,10 +46,10 @@ namespace Netc.Packets
 
 		public void WritePacket(Stream c)
 		{
-
+      LogManager.Info("Write Packet ListId {0}, Index {1}, Size {2}", PacketListId, PacketIndex, Contents.Length);
 			var _packetListId = BitConverter.GetBytes(PacketListId);
 			var _packetIndex = BitConverter.GetBytes(PacketIndex);
-			var _packetSize = BitConverter.GetBytes(PacketSize);
+      var _packetSize = BitConverter.GetBytes(Contents.Length);
 			var _totalPackets = BitConverter.GetBytes(TotalPackets);
 			var _totalSize = BitConverter.GetBytes(TotalSize);
 
@@ -60,17 +61,17 @@ namespace Netc.Packets
 			c.Write(_totalSize, 0, 2);//2 
 			c.Write(CRC, 0, 4);//4
 			c.WriteByte(PacketDescriptions.PacketSeparator); //1
-			c.Write(Contents, 0, PacketSize);
+			c.Write(Contents, 0, Contents.Length);
 			c.WriteByte(PacketDescriptions.PacketEnd); //1
 			c.Flush();
 			Sent = true;
 		}
 
-		public static Packet[] ScanForPackets(MemoryStream stream)
+    public static IEnumerable<Packet> ScanForPackets(MemoryManager stream)
 		{
 			if(stream.Length > HeaderSize)
 			{
-				for(int i = 0; i < stream.Length - HeaderSize; i++)
+				for(long i = 0; i < stream.Length - HeaderSize; i++)
 				{
 					stream.Position = i;
 					byte[] header = new byte[HeaderSize];
@@ -83,6 +84,8 @@ namespace Netc.Packets
 					{
 						continue;
 					}
+          
+
 					var packet = new Packet();
 					packet.PacketListId = BitConverter.ToInt16(new byte[] { header[1], header[2] }, 0);
 					packet.PacketIndex = BitConverter.ToInt16(new byte[] { header[3], header[4] }, 0);
@@ -90,13 +93,35 @@ namespace Netc.Packets
 					packet.TotalPackets = BitConverter.ToInt16(new byte[] { header[7], header[8] }, 0);
 					packet.TotalSize = BitConverter.ToInt16(new byte[] { header[9], header[10] }, 0);
 					packet.CRC = new byte[] { header[11], header[12], header[13], header[14] };
-					!23123
+
+          if (stream.Length <= i + HeaderSize + packet.PacketSize + 1)
+            break;
+
+          stream.Position = i + HeaderSize + packet.PacketSize ;
+          var endCheck = stream.ReadByte();
+          if (endCheck != PacketDescriptions.PacketEnd)
+          {
+            continue;
+          }
+
+
+          packet.Contents = new byte[packet.PacketSize];
+          stream.Position = i + HeaderSize;
+          stream.Read(packet.Contents, 0, packet.PacketSize);
+
+          var end = stream.ReadByte();
+          if (end != PacketDescriptions.PacketEnd)
+            continue;
+          var totalPacketSize = HeaderSize + (int)packet.PacketSize + 1;
+          stream.Remove(0, (int)i + totalPacketSize);
+          i = 0;
+
+          yield return packet;
 
 
 				}
 
 			}
-			return null;
 		}
 
 
