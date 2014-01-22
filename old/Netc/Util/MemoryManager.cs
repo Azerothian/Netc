@@ -10,7 +10,6 @@ namespace Netc.Util
   {
 
     private MemoryStream _memoryStream = new MemoryStream();
-		
     
 
     public override bool CanRead
@@ -151,15 +150,5 @@ namespace Netc.Util
       }
     }
     //public 
-
-		public byte[] ToArray()
-		{
-			return _memoryStream.ToArray();
-		}
-
-		internal byte[] GetBuffer()
-		{
-			return _memoryStream.GetBuffer();
-		}
-	}
+  }
 }

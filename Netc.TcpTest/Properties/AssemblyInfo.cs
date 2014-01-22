@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Netc")]
+[assembly: AssemblyTitle("Netc.TcpTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Netc")]
+[assembly: AssemblyProduct("Netc.TcpTest")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("41fca5b3-f409-44f6-9e98-b9d70737d769")]
+[assembly: Guid("bbdd259f-22f6-4a7a-a7bf-4c96c2f5d626")]
 
 // Version information for an assembly consists of the following four values:
 //

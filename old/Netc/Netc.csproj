@@ -4,13 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{74AE669C-C942-49A0-909C-9E4FA91F238D}</ProjectGuid>
+    <ProjectGuid>{3FDF3D47-A728-4284-986D-2E5F74458892}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Netc</RootNamespace>
     <AssemblyName>Netc</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,23 +39,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Packet\Packet.cs" />
-    <Compile Include="Packet\PacketClient.cs" />
-    <Compile Include="Packet\PacketDescription.cs" />
-    <Compile Include="Packet\PacketList.cs" />
-    <Compile Include="Packet\PacketManager.cs" />
-    <Compile Include="Packet\PacketServer.cs" />
-    <Compile Include="Tcp\TcpServer.cs" />
-    <Compile Include="Tcp\TcpClient.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Abstracts\Delegates.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="Packets\Packet.cs" />
+    <Compile Include="Packets\PacketDescription.cs" />
+    <Compile Include="Packets\PacketList.cs" />
+    <Compile Include="Packets\PacketManager.cs" />
+    <Compile Include="Server.cs" />
+    <Compile Include="Servers\TcpServer.cs" />
+    <Compile Include="Util\MemoryManager.cs" />
+    <Compile Include="Util\Socks\SocketClient.cs" />
+    <Compile Include="Util\Socks\SocketMessage.cs" />
+    <Compile Include="Util\Socks\SocketServer.cs" />
     <Compile Include="Util\Bytes.cs" />
     <Compile Include="Util\CRC.cs" />
-    <Compile Include="Util\GenericDelegates.cs" />
     <Compile Include="Util\LogManager.cs" />
-    <Compile Include="Util\MemoryManager.cs" />
+    <Compile Include="Abstracts\NetworkAbstractServer.cs" />
+    <Compile Include="Abstracts\NetworkAbstractStream.cs" />
+    <Compile Include="Streams\TcpStream.cs" />
+    <Compile Include="Streams\UdpStream.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\ThreadHelper.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
