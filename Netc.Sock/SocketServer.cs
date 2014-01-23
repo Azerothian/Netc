@@ -1,22 +1,24 @@
 ﻿using Netc.Tcp;
 using Netc.Util;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace Netc.Sock
 {
-	public class SocketServer
+	public class SocketServer<T>
 	{
 		Dictionary<TcpClient, Guid> _clientKeys;
-		Dictionary<string, List<Action<Guid, object[]>>> _actions;
+		Dictionary<string, List<Action<Guid, T[]>>> _actions;
 
 		TcpServer _server;
 		public SocketServer()
 		{
 			_clientKeys = new Dictionary<TcpClient, Guid>();
-			_actions = new Dictionary<string, List<Action<Guid, object[]>>>();
+			_actions = new Dictionary<string, List<Action<Guid, T[]>>>();
 			_server = new TcpServer();
 			_server.OnClientConnectedEvent += _server_OnClientConnectedEvent;
 			_server.OnClientDisconnectEvent += _server_OnClientDisconnectEvent;
@@ -26,7 +28,8 @@ namespace Netc.Sock
 		void _server_OnClientMessageReceiveCompleted(TcpClient client, byte[] data)
 		{
 			var socketClient = _clientKeys[client];
-			var obj = (SocketMessage)Bytes.ByteArrayToObject(data);
+
+			var obj = Serial.Deserialise<SocketMessage<T>>(data);
 			if (obj != null)
 			{
 				if (_actions.Keys.Contains(obj.Message))
@@ -46,13 +49,17 @@ namespace Netc.Sock
 
 		void _server_OnClientDisconnectEvent(TcpClient client)
 		{
-			var socketClient = _clientKeys[client];
-			if (_actions.Keys.Contains("disconnect"))
+			if (_clientKeys.ContainsKey(client))
 			{
-				foreach (var act in _actions["disconnect"])
+				var socketClient = _clientKeys[client];
+				if (_actions.Keys.Contains("disconnect"))
 				{
-					act(socketClient, null);
+					foreach (var act in _actions["disconnect"])
+					{
+						act(socketClient, null);
+					}
 				}
+				_clientKeys.Remove(client);
 			}
 		}
 
@@ -73,38 +80,35 @@ namespace Netc.Sock
 			_server.StartListening(port);
 
 		}
-		public void On(string message, Action<Guid, object[]> callback)
+		public void On(string message, Action<Guid, T[]> callback)
 		{
 			if (!_actions.Keys.Contains(message))
 			{
-				_actions.Add(message, new List<Action<Guid, object[]>>());
+				_actions.Add(message, new List<Action<Guid, T[]>>());
 			}
 			_actions[message].Add(callback);
 		}
 
-		public void Emit(Guid clientId, string messageName, params object[] messageContents)
+		public void Emit(Guid clientId, string messageName, params T[] messageContents)
 		{
 			var client = GetClientsById(clientId).FirstOrDefault();
-			//var client = (from v in _clientKeys where v.Value == clientId select v.Key).FirstOrDefault();
-			if(client == null)
+			if (client == null)
 			{
 				throw new ArgumentException("Client id your attempting to emit to is invalid");
 			}
-
-
-			SocketMessage sm = new SocketMessage();
+			SocketMessage<T> sm = new SocketMessage<T>();
 			sm.Message = messageName;
 			sm.Contents = messageContents;
 
-			var data = Bytes.ObjectToByteArray(sm);
+			var data = Serial.Serialise(sm);
 			client.Send(data);
 		}
 
 		public IEnumerable<TcpClient> GetClientsById(params Guid[] arr)
 		{
-			foreach(var v in _clientKeys)
+			foreach (var v in _clientKeys)
 			{
-				if(arr.Contains(v.Value))
+				if (arr.Contains(v.Value))
 				{
 					yield return v.Key;
 				}
@@ -112,35 +116,25 @@ namespace Netc.Sock
 
 		}
 
-		public void Emit(Guid[] clientIds, string messageName, params object[] messageContents)
+		public void Emit(Guid[] clientIds, string messageName, params T[] messageContents)
 		{
-
-			var clients = GetClientsById(clientIds);
-			if (clients.Count() == 0)
+			foreach (var clientId in clientIds)
 			{
-				throw new ArgumentException("Client ids your attempting to emit to is invalid");
-			}
-			SocketMessage sm = new SocketMessage();
-			sm.Message = messageName;
-			sm.Contents = messageContents;
-
-			var data = Bytes.ObjectToByteArray(sm);
-			foreach(var c in clients)
-			{
-				c.Send(data);
+				Emit(clientId, messageName, messageContents);
 			}
 		}
-		public void Emit(string messageName, params object[] messageContents)
+		public void Emit(string messageName, params T[] messageContents)
 		{
-			SocketMessage sm = new SocketMessage();
-			sm.Message = messageName;
-			sm.Contents = messageContents;
-			var data = Bytes.ObjectToByteArray(sm);
-			var clients = _clientKeys.Keys;
-			foreach (var c in clients)
+
+			foreach (var v in _clientKeys.Values)
 			{
-				c.Send(data);
+				Emit(v, messageName, messageContents);
 			}
+		}
+
+		public void Shutdown()
+		{
+			_server.Disconnect();
 		}
 	}
 }

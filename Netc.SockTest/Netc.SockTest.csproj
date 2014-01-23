@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Netc.Sock\Netc.Sock.csproj">
+      <Project>{0eac1558-ff86-4547-8822-26fd53c6b7a5}</Project>
+      <Name>Netc.Sock</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Netc\Netc.csproj">
       <Project>{74ae669c-c942-49a0-909c-9e4fa91f238d}</Project>
       <Name>Netc</Name>

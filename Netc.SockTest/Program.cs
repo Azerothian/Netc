@@ -10,27 +10,40 @@ namespace Netc.SockTest
 	class Program
 	{
 
-		static SocketServer _server;
+		static SocketServer<string> _server;
 
 		static List<ClientTester> _clients;
 
 		static void Main(string[] args)
 		{
 			LogManager.OnLog += LogManager_OnLog;
-			_server = new SocketServer();
+			_server = new SocketServer<string>();
 			_server.StartListening(6667);
 
-			_clients = new List<ClientTester>();
 			_server.On("connect", OnServerConnect);
 			_server.On("login", OnServerLogin);
-      _clients = new List<ClientTester>();
-			
-
-			for (int i = 0; i < 1; i++)
+      
+			_clients = new List<ClientTester>();
+			for (int i = 0; i < 50; i++)
 			{
         _clients.Add(new ClientTester());
 			}
 
+			Console.ReadLine();
+			var _client = new SocketClient<string>();
+			//_client.On("loginConfirm", OnClientLoginConfirm);
+			_client.Connect("127.0.0.1", 6667);
+			var data = new[] { DateTime.Now };
+			_client.Emit("login", data);
+			Console.ReadLine();
+			_client.Disconnect();
+			foreach(var c in _clients)
+			{
+				c.Disconnect();
+
+			}
+			_server.Shutdown();
+			Console.ReadLine();
 		}
 		static void OnServerConnect(Guid clientId, object[] message)
 		{
@@ -39,12 +52,11 @@ namespace Netc.SockTest
 		}
 		static void OnServerLogin(Guid clientId, object[] message)
 		{
-      var dt = (DateTime)message[0];
-      var ts = DateTime.Now - dt;
+     // var dt = (DateTime)message[0];
+     // var ts = DateTime.Now - dt;
       //LogManager.Info("OnClientLoginConfirm : {0}", message);
-      LogManager.Info("OnServerLogin : {0}", ts.TotalMilliseconds);
-
-			_server.Emit(clientId, "loginConfirm", message);
+			LogManager.Info("OnServerLogin : {0}", clientId);
+			_server.Emit("loginConfirm", clientId.ToString());
 		}
 
 		
@@ -56,26 +68,29 @@ namespace Netc.SockTest
 	}
   public class ClientTester
   {
-    SocketClient _client;
+    SocketClient<string> _client;
     public ClientTester()
     {
-      _client = new SocketClient();
+      _client = new SocketClient<string>();
       _client.On("loginConfirm", OnClientLoginConfirm);
       _client.Connect("127.0.0.1", 6667);
-      var data =  new[] { DateTime.Now };
-      _client.Emit("login", data);
+      //var data =  new[] { DateTime.Now };
+     // _client.Emit("login", data);
     }
 
-    void OnClientLoginConfirm(object[] message)
+    void OnClientLoginConfirm(string[] message)
     {
-      var dt = (DateTime)message[0];
-      var ts = DateTime.Now - dt;
-      //LogManager.Info("OnClientLoginConfirm : {0}", message);
-      LogManager.Info("OnClientLoginConfirm : {0}", ts.TotalMilliseconds);
-      var data = new[] { DateTime.Now };
-      _client.Emit("login", data);
+      var clientId = message[0];
+
+			LogManager.Info("OnClientLoginConfirm : {0}", clientId);
+			_client.Disconnect();
     }
 
-  }
+
+		internal void Disconnect()
+		{
+			_client.Disconnect();
+		}
+	}
 	
 }

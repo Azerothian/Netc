@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{74AE669C-C942-49A0-909C-9E4FA91F238D}</ProjectGuid>
+    <ProjectGuid>{0EAC1558-FF86-4547-8822-26FD53C6B7A5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Netc</RootNamespace>
-    <AssemblyName>Netc</AssemblyName>
+    <RootNamespace>Netc.Sock</RootNamespace>
+    <AssemblyName>Netc.Sock</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net35\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -38,23 +41,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Packet\Packet.cs" />
-    <Compile Include="Packet\PacketClient.cs" />
-    <Compile Include="Packet\PacketDescription.cs" />
-    <Compile Include="Packet\PacketList.cs" />
-    <Compile Include="Packet\PacketManager.cs" />
-    <Compile Include="Packet\PacketServer.cs" />
-    <Compile Include="Tcp\TcpServer.cs" />
-    <Compile Include="Tcp\TcpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\Bytes.cs" />
-    <Compile Include="Util\CRC.cs" />
-    <Compile Include="Util\GenericDelegates.cs" />
-    <Compile Include="Util\LogManager.cs" />
-    <Compile Include="Util\MemoryManager.cs" />
-    <Compile Include="Util\ThreadHelper.cs" />
+    <Compile Include="Serial.cs" />
+    <Compile Include="SocketClient.cs" />
+    <Compile Include="SocketMessage.cs" />
+    <Compile Include="SocketServer.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Netc\Netc.csproj">
+      <Project>{74ae669c-c942-49a0-909c-9e4fa91f238d}</Project>
+      <Name>Netc</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

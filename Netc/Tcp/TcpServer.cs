@@ -12,9 +12,10 @@ namespace Netc.Tcp
 	{
 		private Dictionary<string, TcpClient> _clients = new Dictionary<string, TcpClient>();
 		private Socket server;
-
+		private bool IsShuttingDown = false;
 		public void Disconnect()
 		{
+			IsShuttingDown = true;
 			foreach (var v in _clients.Keys)
 			{
 				_clients[v].Disconnect();
@@ -30,8 +31,7 @@ namespace Netc.Tcp
 		{
 			IPEndPoint ipep = new IPEndPoint(IPAddress.Any, Port);
 
-			server = new Socket(AddressFamily.InterNetwork,
-							SocketType.Stream, ProtocolType.Tcp);
+			server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			server.NoDelay = true;
 			server.Bind(ipep);
 			server.Listen(10);
@@ -40,12 +40,13 @@ namespace Netc.Tcp
 
 		public event GenericVoidDelegate<TcpClient> OnClientConnectedEvent;
 		public event GenericVoidDelegate<TcpClient> OnClientDisconnectEvent;
-		//public event GenericVoidDelegate<TcpClient, byte[], int> OnClientMessageReceivedEvent;
 		public event GenericVoidDelegate<TcpClient, int> OnClientMessageSentEvent;
 		public event GenericVoidDelegate<TcpClient, byte[]> OnClientMessageReceiveCompleted;
 		
 		private void AcceptConnection(IAsyncResult iar)
 		{
+			if (IsShuttingDown)
+				return;
 			try
 			{
 				Socket oldserver = (Socket)iar.AsyncState;
@@ -62,16 +63,12 @@ namespace Netc.Tcp
 
 				_clients[key].OnConnectedEvent += TcpServer_OnConnectedEvent;
 				_clients[key].OnDisconnectedEvent += TcpServer_OnDisconnectedEvent;
-
-				//_clients[key].OnMessageReceivedEvent += TcpServer_OnMessageReceivedEvent;
 				_clients[key].OnMessageReceiveCompleted += TcpServer_OnMessageReceiveCompleted;
 				_clients[key].OnMessageSentEvent += TcpServer_OnMessageSentEvent;
-
-				//Log.WriteLine(LogLevel.Information, "Client {0} Connected.", client.RemoteEndPoint);
 			}
-			catch
+			catch(Exception ex)
 			{
-				LogManager.Critical("Failure Accepting connections", this);
+				LogManager.Critical(ex.Message);
 			}
 			finally
 			{

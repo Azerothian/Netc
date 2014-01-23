@@ -16,6 +16,8 @@ namespace Netc.Tcp
 		private byte[] startOfFile = new byte[] { 254, 255, 255, 255 };//BitConverter.GetBytes(-2);
 		private byte[] endOfHeader = new byte[] { 253, 255, 255, 255 };//BitConverter.GetBytes(-3);
 
+		private bool IsShuttingDown = false;
+
 		private MemoryManager _incomingStream = new MemoryManager();
 		private const int receiveBufferSize = 1024;
 		private Socket _socket;
@@ -36,7 +38,12 @@ namespace Netc.Tcp
 		{
 			ThreadSleep = 1;
 			Start();
+			OnDisconnectedEvent +=TcpClient_OnDisconnectedEvent;
+		}
 
+		private void TcpClient_OnDisconnectedEvent(TcpClient obj1)
+		{
+			Stop();
 		}
 		#region Events
 		/// <summary>
@@ -80,13 +87,17 @@ namespace Netc.Tcp
 		#region Connect Functions
 		public void Disconnect()
 		{
-			if (OnDisconnectingEvent != null)
+			IsShuttingDown = true;
+			if (_socket.Connected)
 			{
-				OnDisconnectingEvent(this);
+				if (OnDisconnectingEvent != null)
+				{
+					OnDisconnectingEvent(this);
+				}
+				_socket.Shutdown(SocketShutdown.Both);
+				_socket.Close();
 			}
-			_socket.Shutdown(SocketShutdown.Both);
-			_socket.Close();
-			if (OnDisconnectedEvent != null)
+			if (OnDisconnectedEvent != null && !DisconnectedEvent)
 			{
 				OnDisconnectedEvent(this);
 			}
@@ -105,8 +116,8 @@ namespace Netc.Tcp
 			_socket = new Socket(AddressFamily.InterNetwork,
 							 SocketType.Stream, ProtocolType.Tcp);
 			_socket.NoDelay = true;
-			_socket.BeginConnect(ipep,
-				new AsyncCallback(EndConnect), _socket);
+			_socket.BeginConnect(ipep, EndConnect, _socket);
+	
 		}
 		private void EndConnect(IAsyncResult ar)
 		{
@@ -216,31 +227,65 @@ namespace Netc.Tcp
 		}
 		private void EndReceive(IAsyncResult ar)
 		{
-			try
-			{
-				// Retrieve the state object and the client socket 
-				// from the asynchronous state object.
-				StateObject state = (StateObject)ar.AsyncState;
-				Socket client = state.ServerSocket;
-
-				// Read data from the remote device.
-				int bytesRead = -1;
-				bytesRead = client.EndReceive(ar);
-				//LogManager.Info("EndReceive {0}", bytesRead);
-
-				lock (_incomingStream)
+		//	if (!IsShuttingDown)
+		//	{
+				try
 				{
-					_incomingStream.Write(state.Buffer, 0, bytesRead);
+
+					// Retrieve the state object and the client socket 
+					// from the asynchronous state object.
+					StateObject state = (StateObject)ar.AsyncState;
+
+					if (!state.ServerSocket.Connected)
+						return;
+
+
+					Socket client = state.ServerSocket;
+
+					// Read data from the remote device.
+					int bytesRead = -1;
+					//	if (client.Connected)
+					//	{
+					bytesRead = client.EndReceive(ar);
+
+					if (bytesRead > 0)
+					{
+						//LogManager.Info("EndReceive {0}", bytesRead);
+
+						lock (_incomingStream)
+						{
+							_incomingStream.Write(state.Buffer, 0, bytesRead);
+						}
+
+						client.BeginReceive(state.Buffer, 0, receiveBufferSize, 0, EndReceive, state);
+					}
+					else
+					{
+						if (OnDisconnectedEvent != null)
+						{
+							OnDisconnectedEvent(this);
+						}
+
+					}
+				}
+				catch (SocketException e)
+				{
+					//LogManager.Critical(e.ToString());
+					if (OnDisconnectedEvent != null)
+					{
+						OnDisconnectedEvent(this);
+					}
+				}
+				catch (ObjectDisposedException e)
+				{
+					//LogManager.Critical(e.ToString());
+					if (OnDisconnectedEvent != null)
+					{
+						OnDisconnectedEvent(this);
+					}
 				}
 
-				client.BeginReceive(state.Buffer, 0, receiveBufferSize, 0, EndReceive, state);
-
-			}
-			catch (Exception e)
-			{
-
-				LogManager.Critical(e.ToString());
-			}
+		//	}
 		}
 		#endregion
 		private class StateObject
@@ -256,9 +301,21 @@ namespace Netc.Tcp
 			public byte[] Buffer;
 		}
 
-
+		bool DisconnectedEvent = false;
 		public override void ThreadWorker(TimeSpan timeDiff)
 		{
+			if (_socket == null)
+				return;
+			if (!_socket.Connected && !DisconnectedEvent)
+			{
+				if (OnDisconnectedEvent != null)
+				{
+					OnDisconnectedEvent(this);
+				}
+				DisconnectedEvent = true;
+				Stop();
+				return;
+			}
 			byte[] packet = null;
 			lock (_incomingStream)
 			{
@@ -299,7 +356,7 @@ namespace Netc.Tcp
 						packet = new byte[packetSize];
 						Buffer.BlockCopy(buffer, index, packet, 0, packetSize);
 						var totalPacketSize = startOfFile.Length + sizeof(int) + packetSize + endOfFile.Length;
-						_incomingStream.Remove(0, i+totalPacketSize);
+						_incomingStream.Remove(0, i + totalPacketSize);
 						break;
 
 
