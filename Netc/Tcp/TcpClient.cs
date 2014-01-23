@@ -306,16 +306,16 @@ namespace Netc.Tcp
 		{
 			if (_socket == null)
 				return;
-			if (!_socket.Connected && !DisconnectedEvent)
-			{
-				if (OnDisconnectedEvent != null)
-				{
-					OnDisconnectedEvent(this);
-				}
-				DisconnectedEvent = true;
-				Stop();
-				return;
-			}
+			//if (!_socket.Connected && !DisconnectedEvent)
+			//{
+			//	if (OnDisconnectedEvent != null)
+			//	{
+			//		OnDisconnectedEvent(this);
+			//	}
+			//	DisconnectedEvent = true;
+			//	//Stop();
+			//	return;
+			//}
 			byte[] packet = null;
 			lock (_incomingStream)
 			{

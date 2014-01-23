@@ -11,6 +11,7 @@ namespace Netc.Sock
 {
 	public class SocketServer<T>
 	{
+
 		Dictionary<TcpClient, Guid> _clientKeys;
 		Dictionary<string, List<Action<Guid, T[]>>> _actions;
 

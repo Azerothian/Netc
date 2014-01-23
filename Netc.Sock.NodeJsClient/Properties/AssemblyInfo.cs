@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Netc.TestClient")]
+[assembly: AssemblyTitle("Netc.Sock.NodeJsClient")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Netc.TestClient")]
+[assembly: AssemblyProduct("Netc.Sock.NodeJsClient")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4460d41a-12f7-4221-b7db-de6fb7ac4bff")]
+[assembly: Guid("e279527a-9552-4ad7-9e4e-ce6bc62e812d")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{23415B27-92B0-442F-913D-C5E1AE8555AF}</ProjectGuid>
+    <ProjectGuid>{6EF3430E-6C23-4235-BA58-21D4BDE2AA36}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Netc.TestSockClient</RootNamespace>
-    <AssemblyName>Netc.TestSockClient</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Netc.Sock.NodeJsClient</RootNamespace>
+    <AssemblyName>Netc.Sock.NodeJsClient</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,13 +22,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Netc.SockTest.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,11 +46,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\Netc.Sock\Netc.Sock.csproj">
+      <Project>{0eac1558-ff86-4547-8822-26fd53c6b7a5}</Project>
+      <Name>Netc.Sock</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Netc\Netc.csproj">
-      <Project>{3fdf3d47-a728-4284-986d-2e5f74458892}</Project>
+      <Project>{74ae669c-c942-49a0-909c-9e4fa91f238d}</Project>
       <Name>Netc</Name>
     </ProjectReference>
   </ItemGroup>
