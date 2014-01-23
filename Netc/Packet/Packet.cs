@@ -114,7 +114,7 @@ namespace Netc.Packets
           if (end != PacketDescriptions.PacketEnd)
             continue;
           var totalPacketSize = HeaderSize + (int)packet.PacketSize + 1;
-          stream.Remove(0, (int)i + totalPacketSize);
+          stream.Remove((int)i, totalPacketSize);
           i = 0;
 
           yield return packet;

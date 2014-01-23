@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{74AE669C-C942-49A0-909C-9E4FA91F238D}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{9E1A30B0-B301-4849-8BE0-A71B2D6DD65E}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Netc</RootNamespace>
-    <AssemblyName>Netc</AssemblyName>
+    <RootNamespace>Netc.SockTest</RootNamespace>
+    <AssemblyName>Netc.SockTest</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -38,26 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Packet\Packet.cs" />
-    <Compile Include="Packet\PacketClient.cs" />
-    <Compile Include="Packet\PacketDescription.cs" />
-    <Compile Include="Packet\PacketList.cs" />
-    <Compile Include="Packet\PacketManager.cs" />
-    <Compile Include="Packet\PacketServer.cs" />
-    <Compile Include="Sock\SocketClient.cs" />
-    <Compile Include="Sock\SocketMessage.cs" />
-    <Compile Include="Sock\SocketServer.cs" />
-    <Compile Include="Tcp\TcpServer.cs" />
-    <Compile Include="Tcp\TcpClient.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\Bytes.cs" />
-    <Compile Include="Util\CRC.cs" />
-    <Compile Include="Util\GenericDelegates.cs" />
-    <Compile Include="Util\LogManager.cs" />
-    <Compile Include="Util\MemoryManager.cs" />
-    <Compile Include="Util\ThreadHelper.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Netc\Netc.csproj">
+      <Project>{74ae669c-c942-49a0-909c-9e4fa91f238d}</Project>
+      <Name>Netc</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

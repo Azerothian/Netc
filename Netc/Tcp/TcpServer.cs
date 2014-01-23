@@ -35,12 +35,12 @@ namespace Netc.Tcp
 			server.NoDelay = true;
 			server.Bind(ipep);
 			server.Listen(10);
-			server.BeginAccept(new AsyncCallback(AcceptConnection), server);
+			server.BeginAccept(AcceptConnection, server);
 		}
 
 		public event GenericVoidDelegate<TcpClient> OnClientConnectedEvent;
 		public event GenericVoidDelegate<TcpClient> OnClientDisconnectEvent;
-		public event GenericVoidDelegate<TcpClient, byte[], int> OnClientMessageReceivedEvent;
+		//public event GenericVoidDelegate<TcpClient, byte[], int> OnClientMessageReceivedEvent;
 		public event GenericVoidDelegate<TcpClient, int> OnClientMessageSentEvent;
 		public event GenericVoidDelegate<TcpClient, byte[]> OnClientMessageReceiveCompleted;
 		
@@ -63,7 +63,7 @@ namespace Netc.Tcp
 				_clients[key].OnConnectedEvent += TcpServer_OnConnectedEvent;
 				_clients[key].OnDisconnectedEvent += TcpServer_OnDisconnectedEvent;
 
-				_clients[key].OnMessageReceivedEvent += TcpServer_OnMessageReceivedEvent;
+				//_clients[key].OnMessageReceivedEvent += TcpServer_OnMessageReceivedEvent;
 				_clients[key].OnMessageReceiveCompleted += TcpServer_OnMessageReceiveCompleted;
 				_clients[key].OnMessageSentEvent += TcpServer_OnMessageSentEvent;
 
@@ -77,7 +77,7 @@ namespace Netc.Tcp
 			{
 				try
 				{
-					server.BeginAccept(new AsyncCallback(AcceptConnection), server);
+					server.BeginAccept(AcceptConnection, server);
 				}
 				catch (ObjectDisposedException)
 				{
@@ -102,13 +102,13 @@ namespace Netc.Tcp
 			}
 		}
 
-		void TcpServer_OnMessageReceivedEvent(TcpClient client, byte[] data, int bytesReceived)
-		{
-			if (OnClientMessageReceivedEvent != null)
-			{
-				OnClientMessageReceivedEvent(client, data, bytesReceived);
-			}
-		}
+		//void TcpServer_OnMessageReceivedEvent(TcpClient client, byte[] data, int bytesReceived)
+		//{
+		//	if (OnClientMessageReceivedEvent != null)
+		//	{
+		//		OnClientMessageReceivedEvent(client, data, bytesReceived);
+		//	}
+		//}
 
 		void TcpServer_OnDisconnectedEvent(TcpClient client)
 		{

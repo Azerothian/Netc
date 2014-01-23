@@ -121,9 +121,10 @@ namespace Netc.Util
             endArray = new byte[endLength];
             Buffer.BlockCopy(buffer, index + count, endArray, 0, endLength);
           }
-
-          _memoryStream.Position = 0;
-          _memoryStream.SetLength(0);
+					_memoryStream.Close();
+					_memoryStream = new MemoryStream();
+          //_memoryStream.Position = 0;
+          //_memoryStream.SetLength(0);
           if (startArray != null)
           {
             Write(startArray);

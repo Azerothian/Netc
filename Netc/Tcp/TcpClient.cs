@@ -10,17 +10,15 @@ using System.Threading;
 
 namespace Netc.Tcp
 {
-	public class TcpClient
+	public class TcpClient : ThreadHelper
 	{
-		private byte[] eof = BitConverter.GetBytes(-1);
+		private byte[] endOfFile = new byte[] { 255, 255, 255, 255 };// BitConverter.GetBytes(-1);
+		private byte[] startOfFile = new byte[] { 254, 255, 255, 255 };//BitConverter.GetBytes(-2);
+		private byte[] endOfHeader = new byte[] { 253, 255, 255, 255 };//BitConverter.GetBytes(-3);
 
-
-		private const int receiveBufferSize = 512;
+		private MemoryManager _incomingStream = new MemoryManager();
+		private const int receiveBufferSize = 1024;
 		private Socket _socket;
-		private bool _isSending = false;
-		Stack<byte[]> _queue = new Stack<byte[]>();
-		byte[] _current = null;
-		int _currentSent = 0;
 		public string Key = "";
 		public bool KeepAlive
 		{
@@ -34,7 +32,12 @@ namespace Netc.Tcp
 			}
 		}
 
+		public TcpClient()
+		{
+			ThreadSleep = 1;
+			Start();
 
+		}
 		#region Events
 		/// <summary>
 		/// Occurs when [on connected event].
@@ -44,7 +47,7 @@ namespace Netc.Tcp
 		/// <summary>
 		/// Occurs when [on message received event].
 		/// </summary>
-		public event GenericVoidDelegate<TcpClient, byte[], int> OnMessageReceivedEvent;
+		//public event GenericVoidDelegate<TcpClient, byte[], int> OnMessageReceivedEvent;
 
 		public event GenericVoidDelegate<TcpClient, byte[]> OnMessageReceiveCompleted;
 
@@ -134,49 +137,40 @@ namespace Netc.Tcp
 		#region Send Functions
 		public void Send(byte[] data)
 		{
-			lock (_queue)
-			{
-				_queue.Push(data);
-			}
-			if (!_isSending)
-			{
-				BeginSend();
-			}
+			BeginSend(data);
 
 		}
 
-		private void BeginSend()
+		private void BeginSend(byte[] data)
 		{
-			lock (_queue)
-			{
-				if(_queue.Count() > 0)
-				{
-					_current = _queue.Pop();
-				} else {
-					_current = null;
-				}
-			}
-			if (!_isSending && _current != null)
-				{
-					
-					_currentSent = 0;
-					_isSending = true;
-					// Convert the string data to byte data using ASCII encoding.
-					// Begin sending the data to the remote device.
-					if (!_socket.Connected) //puts in a delay.. though really should verify if in connecting state...
-					{
-						do
-						{
-							Thread.Sleep(10);
-						} while (!_socket.Connected);
-					}
 
-					var array = new byte[_current.Length + eof.Length];
-					Buffer.BlockCopy(_current, 0, array, 0, _current.Length);
-					Buffer.BlockCopy(eof, 0, array, _current.Length, eof.Length);
-					_socket.BeginSend(array, 0, array.Length, 0, EndSend, _socket);
-				}
-			
+			// Convert the string data to byte data using ASCII encoding.
+			// Begin sending the data to the remote device.
+			if (!_socket.Connected) //TODO: puts in a delay.. though really should verify if in connecting state...
+			{
+				do
+				{
+					Thread.Sleep(10);
+				} while (!_socket.Connected);
+			}
+			var sizeOfPacket = BitConverter.GetBytes(data.Length);
+			var totalPacketSize = startOfFile.Length + sizeOfPacket.Length + endOfHeader.Length + data.Length + endOfFile.Length;
+			var array = new byte[totalPacketSize];
+
+			var index = 0;
+			Buffer.BlockCopy(startOfFile, 0, array, 0, startOfFile.Length);
+			index += startOfFile.Length;
+			Buffer.BlockCopy(sizeOfPacket, 0, array, index, sizeOfPacket.Length);
+			index += sizeOfPacket.Length;
+			Buffer.BlockCopy(endOfHeader, 0, array, index, endOfHeader.Length);
+			index += endOfHeader.Length;
+			Buffer.BlockCopy(data, 0, array, index, data.Length);
+			index += data.Length;
+			Buffer.BlockCopy(endOfFile, 0, array, index, endOfFile.Length);
+
+			_socket.BeginSend(array, 0, array.Length, 0, EndSend, _socket);
+
+
 		}
 		private void EndSend(IAsyncResult ar)
 		{
@@ -189,23 +183,11 @@ namespace Netc.Tcp
 				int bytesSent = client.EndSend(ar);
 				//Log.WriteLine(LogLevel.Information, "Sent {0} bytes to server.", bytesSent);
 				//Fire sent event here
-
-				_currentSent += bytesSent;
-
-				if(_currentSent == _current.Length + eof.Length)
+				if (OnMessageSentEvent != null)
 				{
-					if (OnMessageSentEvent != null)
-					{
-						OnMessageSentEvent(this, _currentSent);
-					}
-					_isSending = false;
-					if (_queue.Count > 0)
-					{
-						//Thread.Sleep(100);//let the buffer clear?
-						BeginSend();
-					}
+					OnMessageSentEvent(this, bytesSent);
 				}
-			
+
 			}
 			catch (Exception e)
 			{
@@ -246,36 +228,9 @@ namespace Netc.Tcp
 				bytesRead = client.EndReceive(ar);
 				//LogManager.Info("EndReceive {0}", bytesRead);
 
-
-				state.Memory.Write(state.Buffer, 0, bytesRead);
-
-				// Get the rest of the data.
-				if (OnMessageReceivedEvent != null)
+				lock (_incomingStream)
 				{
-					//Fire Recieve Event Here
-					byte[] data = new byte[bytesRead];
-					Buffer.BlockCopy(state.Buffer, 0, data, 0, bytesRead);
-					OnMessageReceivedEvent(this, data, bytesRead);
-				}
-				//	if(bytesRead < receiveBufferSize)
-				//	{
-				//var eofCheck = state.Buffer.Skip(bytesRead - eof.Length).Ta;
-
-				var eofCheck = new byte[eof.Length];
-				Buffer.BlockCopy(state.Buffer, bytesRead - eof.Length, eofCheck, 0, eof.Length);
-				if (eofCheck.SequenceEqual(eof))
-				{
-					if (OnMessageReceiveCompleted != null)
-					{
-						//TODO can i d
-						var resultArr = state.Memory.GetBuffer();
-						var resultData = new byte[(int)state.Memory.Length - eof.Length];
-						state.Memory.Clear();
-						Buffer.BlockCopy(resultArr, 0, resultData, 0, resultData.Length);
-						OnMessageReceiveCompleted(this, resultData);
-					}
-					//	}
-
+					_incomingStream.Write(state.Buffer, 0, bytesRead);
 				}
 
 				client.BeginReceive(state.Buffer, 0, receiveBufferSize, 0, EndReceive, state);
@@ -290,11 +245,11 @@ namespace Netc.Tcp
 		#endregion
 		private class StateObject
 		{
-			public MemoryManager Memory;
+			//			public MemoryManager Memory;
 			public StateObject(int bufferSize)
 			{
 				Buffer = new byte[bufferSize];
-				Memory = new MemoryManager();
+				//Memory = new MemoryManager();
 
 			}
 			public Socket ServerSocket;
@@ -302,5 +257,60 @@ namespace Netc.Tcp
 		}
 
 
+		public override void ThreadWorker(TimeSpan timeDiff)
+		{
+			byte[] packet = null;
+			lock (_incomingStream)
+			{
+				if (_incomingStream.Length > startOfFile.Length + sizeof(int) + endOfHeader.Length) // check if buffer is larger then min header size
+				{
+					//CancelNextSleep();
+					for (var i = 0; i < _incomingStream.Length; i++)
+					{
+						var buffer = _incomingStream.GetBuffer();
+						var startCheck = new byte[startOfFile.Length];
+						var index = i;
+						if (index + startOfFile.Length + sizeof(int) + endOfHeader.Length > _incomingStream.Length)
+							break;
+						Buffer.BlockCopy(buffer, index, startCheck, 0, startOfFile.Length);
+						if (!startCheck.SequenceEqual(startOfFile)) // start not found.. continue
+							continue;
+						index += startOfFile.Length;
+
+						int packetSize = BitConverter.ToInt32(buffer, index);
+						index += sizeof(int);
+
+						var endOfHeaderCheck = new byte[endOfHeader.Length];
+						Buffer.BlockCopy(buffer, index, endOfHeaderCheck, 0, endOfHeader.Length);
+						if (!endOfHeader.SequenceEqual(endOfHeaderCheck)) // endOfHeader not found.. continue
+							continue;
+
+						index += endOfHeader.Length;
+
+						if (_incomingStream.Length < index + packetSize + endOfFile.Length) // stream not finished yet;
+							break;
+
+						var endCheck = new byte[endOfFile.Length];
+						Buffer.BlockCopy(buffer, index + packetSize, endCheck, 0, endOfFile.Length);
+						if (!endCheck.SequenceEqual(endOfFile))
+							continue; // we had false hope
+
+
+						packet = new byte[packetSize];
+						Buffer.BlockCopy(buffer, index, packet, 0, packetSize);
+						var totalPacketSize = startOfFile.Length + sizeof(int) + packetSize + endOfFile.Length;
+						_incomingStream.Remove(0, i+totalPacketSize);
+						break;
+
+
+					}
+				}
+			}
+			if (packet != null && OnMessageReceiveCompleted != null)
+			{
+				OnMessageReceiveCompleted(this, packet);
+
+			}
+		}
 	}
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Netc.TcpTest
 {
@@ -25,7 +26,7 @@ namespace Netc.TcpTest
 
 			InitServer();
 
-			for(var i = 0; i < 20; i++)
+			for(var i = 0; i < 5; i++)
 			{
 				InitClient();
 
@@ -50,8 +51,9 @@ namespace Netc.TcpTest
 			if (CompareObject(data))
 			{
 				LogManager.Info("[CLIENT] SUCCESS COMPARE");
+				Thread.Sleep(10);
 				stream.Send(obj);
-
+				//stream.Send(obj);
 			}
 			else
 			{
@@ -106,7 +108,7 @@ namespace Netc.TcpTest
 
 		static void GenerateObject()
 		{
-			IEnumerable<int> _ii = Enumerable.Range(1, 1000).ToArray();
+			IEnumerable<int> _ii = Enumerable.Range(1, 10).ToArray();
 			obj = Bytes.ObjectToByteArray(_ii);
 			crc = Util.CRC.CalculateCRC(obj);
 		}

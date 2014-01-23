@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Netc.PacketTest
 {
@@ -66,7 +67,7 @@ namespace Netc.PacketTest
 		{
 			LogManager.Info("[CLIENT] Connected to Server - Sending Object");
 			client.Send(obj);
-			//stream.Send(obj);
+
 		}
 
 		#endregion
@@ -90,6 +91,8 @@ namespace Netc.PacketTest
 			{
 				LogManager.Info("[SERVER] SUCCESS COMPARE");
 				client.Send(obj);
+				//Thread.Sleep(10);
+				//client.Send(obj);
 			}
 			else
 			{
