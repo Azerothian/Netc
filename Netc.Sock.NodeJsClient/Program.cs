@@ -15,7 +15,7 @@ namespace Netc.SockTest
 		static void Main(string[] args)
 		{
 			LogManager.OnLog += LogManager_OnLog;
-			var _client = new SocketClient<string>();
+			var _client = new SocketClient<object>();
 			_client.On("response", OnResponse);
 			_client.Connect("127.0.0.1", 6112);
 
@@ -23,7 +23,7 @@ namespace Netc.SockTest
 			Console.ReadLine();
 			_client.Disconnect();
 		}
-		static void OnResponse(string[] message)
+		static void OnResponse(object[] message)
 		{
 			LogManager.Info("OnResponse : {0}",  message[0]);
 

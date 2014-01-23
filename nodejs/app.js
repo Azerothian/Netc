@@ -11,7 +11,19 @@ var start = edge.func('Netc.Sock.NodeJs.dll');
 start('', function (error, result) {
 
 	//console.log(result);
-	console.log(result.StartListening(6112));
+	result.StartListening(6112);
+	result.On({ eventName: "response",
+		callback: function(input, callback) {
+			console.log("callback");
+			console.log(util.inspect(input));
+			result.Emit({
+				client: input.clientId, 
+				eventName: "response", 
+				data: input.data 
+			});
+		}
+	});
+	//
 
 });
 

@@ -92,6 +92,7 @@ namespace Netc.Sock
 
 		public void Emit(Guid clientId, string messageName, params T[] messageContents)
 		{
+      LogManager.Info("Firing Emit");
 			var client = GetClientsById(clientId).FirstOrDefault();
 			if (client == null)
 			{
@@ -119,6 +120,7 @@ namespace Netc.Sock
 
 		public void Emit(Guid[] clientIds, string messageName, params T[] messageContents)
 		{
+      
 			foreach (var clientId in clientIds)
 			{
 				Emit(clientId, messageName, messageContents);
