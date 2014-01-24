@@ -322,9 +322,9 @@ namespace Netc.Tcp
 				if (_incomingStream.Length > startOfFile.Length + sizeof(int) + endOfHeader.Length) // check if buffer is larger then min header size
 				{
 					//CancelNextSleep();
+					var buffer = _incomingStream.GetBuffer();
 					for (var i = 0; i < _incomingStream.Length; i++)
 					{
-						var buffer = _incomingStream.GetBuffer();
 						var startCheck = new byte[startOfFile.Length];
 						var index = i;
 						if (index + startOfFile.Length + sizeof(int) + endOfHeader.Length > _incomingStream.Length)
@@ -355,7 +355,7 @@ namespace Netc.Tcp
 
 						packet = new byte[packetSize];
 						Buffer.BlockCopy(buffer, index, packet, 0, packetSize);
-						var totalPacketSize = startOfFile.Length + sizeof(int) + packetSize + endOfFile.Length;
+						var totalPacketSize = startOfFile.Length + sizeof(int) + endOfHeader.Length + packetSize + endOfFile.Length;
 						_incomingStream.Remove(0, i + totalPacketSize);
 						break;
 

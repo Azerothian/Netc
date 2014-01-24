@@ -67,7 +67,10 @@ namespace Netc.Sock
 		void _server_OnClientConnectedEvent(TcpClient client)
 		{
 			var socketClient = Guid.NewGuid();
-			_clientKeys.Add(client, socketClient);
+			lock (_clientKeys)
+			{
+				_clientKeys.Add(client, socketClient);
+			}
 			if (_actions.Keys.Contains("connect"))
 			{
 				foreach (var act in _actions["connect"])
@@ -128,10 +131,13 @@ namespace Netc.Sock
 		}
 		public void Emit(string messageName, params T[] messageContents)
 		{
-
-			foreach (var v in _clientKeys.Values)
+			lock (_clientKeys)
 			{
-				Emit(v, messageName, messageContents);
+				var data = _clientKeys.Values.ToArray();
+				foreach (var v in _clientKeys.Values)
+				{
+					Emit(v, messageName, messageContents);
+				}
 			}
 		}
 

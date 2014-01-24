@@ -34,7 +34,7 @@ namespace Netc.SockTest
 			//_client.On("loginConfirm", OnClientLoginConfirm);
 			_client.Connect("127.0.0.1", 6667);
 			var data = new[] { DateTime.Now };
-			_client.Emit("login", data);
+			//_client.Emit("login", data);
 			Console.ReadLine();
 			_client.Disconnect();
 			foreach(var c in _clients)

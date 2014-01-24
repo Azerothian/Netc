@@ -11,11 +11,11 @@ namespace Netc.SockTest
 	{
 
 
-
+		static SocketClient<string> _client;
 		static void Main(string[] args)
 		{
 			LogManager.OnLog += LogManager_OnLog;
-			var _client = new SocketClient<object>();
+			_client = new SocketClient<string>();
 			_client.On("response", OnResponse);
 			_client.Connect("127.0.0.1", 6112);
 
@@ -23,10 +23,10 @@ namespace Netc.SockTest
 			Console.ReadLine();
 			_client.Disconnect();
 		}
-		static void OnResponse(object[] message)
+		static void OnResponse(string[] message)
 		{
 			LogManager.Info("OnResponse : {0}",  message[0]);
-
+			_client.Emit("response", "YSYAYS");
 		}
 
 		static void LogManager_OnLog(LogManager.LogType type, string message, params object[] objects)

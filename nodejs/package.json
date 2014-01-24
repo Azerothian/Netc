@@ -7,7 +7,7 @@
     
   },
   "dependencies": {
-    "edge": "*",
-    "keypress": "*"
+    "coffee-script": "*",
+    "bluebird": "*"
   }
 }
