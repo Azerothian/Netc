@@ -21,10 +21,10 @@ class TcpServer
   onClientData: (client, data) =>
     decoder = new StringDecoder('utf8');
     result =  decoder.write(data);
-    console.log("length: #{data.length}, result: #{result}");
+    #console.log("length: #{data.length}, result: #{result}");
     obj = JSON.parse(result);
     client.sendData(obj);
-    #console.log "CLIENT DATA", data;
+    ##console.log "CLIENT DATA", data;
     #@emit 'data', client, data;
 
 
@@ -38,6 +38,7 @@ class TcpClient extends Events.EventEmitter
     @socket.on 'data', @onData
 
   onData: (data) =>
+    #console.log "onData", data
     @memory.write(data);
     @scanForPackets();
 
@@ -46,7 +47,7 @@ class TcpClient extends Events.EventEmitter
     buf = new Buffer(str, 'utf8');
     bufPack = new MemoryManager();
     packetSize = @startOfFile.length + 4 + @endOfHeader.length + buf.length + @endOfFile.length;
-    console.log("[SEND] packetSize #{packetSize}");
+    #console.log("[SEND] packetSize #{packetSize}");
     bufPack.setLength(packetSize);
     index = 0;
     bufPack.writeBytes(@startOfFile, index);
@@ -62,11 +63,11 @@ class TcpClient extends Events.EventEmitter
 
 
   scanForPackets: () =>
-    buffer = @memory.getBuffer();
+    #buffer = @memory.getBuffer();
     for i in [0...@memory.length]
       index = i;
-      if index + @startOfFile.length + 4 + @endOfHeader.length > buffer.length
-        console.log  "To Short";
+      if index + @startOfFile.length + 4 + @endOfHeader.length > @memory.length
+        #console.log  "To Short";
         break;
 
       if not @memory.compare(index, @startOfFile)
@@ -75,7 +76,7 @@ class TcpClient extends Events.EventEmitter
       #console.log  "Start Index found";
       index += @startOfFile.length;
 
-      packetSize = buffer.readInt32LE(index);
+      packetSize = @memory.readInt32(index);
 
       #console.log "packetSize #{packetSize}";
       index += 4;
@@ -93,10 +94,10 @@ class TcpClient extends Events.EventEmitter
         #console.log  "End of file not found";
         continue;
       #console.log "slice #{index}  #{packetSize} #{packetSize - index}"
-      data = buffer.slice(index, index+packetSize);
-      totalPacketSize = @startOfFile.Length + 4 + @endOfHeader.Length + packetSize + @endOfFile.Length;
+      data = @memory.slice(index, index+packetSize);
+      totalPacketSize = @startOfFile.length + 4 + @endOfHeader.length + packetSize + @endOfFile.length;
       @memory.remove 0, i + totalPacketSize
-      #console.log  "complete";
+      #console.log  "complete", data;
       @emit 'data', @, data;
 
       break;
@@ -111,28 +112,44 @@ class MemoryManager #: Events.EventEmitter
     for i in [index...index + array.length]
       bufferIndex = i;
       arrayIndex = i - index;
-      #console.log "writeBytes buffer[#{bufferIndex}] = #{array[arrayIndex]}[#{arrayIndex}]"
+      ##console.log "writeBytes buffer[#{bufferIndex}] = #{array[arrayIndex]}[#{arrayIndex}]"
       @buffer[bufferIndex] = array[arrayIndex];
   setLength: (length) =>
+    #console.log "[MemoryManager]  SetLength #{length}";
     @buffer = new Buffer(length);
     @length = length;
   write: (source) => 
+    #console.log "[MemoryManager]  Write source #{source.length} #{@buffer?}";
     if not @buffer?
       @buffer = new Buffer(source.length);
       source.copy(@buffer);
     else
       @buffer.concat(source)
     @length = @buffer.length;
-  remove: (index, count) =>
-    newBuffer = new Buffer(1);
-    if index > 0
-      newBuffer = @buffer.slice(0, index)
-    if index + count < @buffer.length
-      end = @buffer.slice(index +count)
-      newBuffer.concat(end);
-    @buffer = newBuffer;
-    @length = @buffer.length;
+  remove: (start, end = @buffer.length) =>
+    sectionSize = start - end;
+    if sectionSize > 0 and end < @buffer.length
+      #console.log "[MemoryManager]  Remove #{start} #{end}";
+      @newBuffer = new Buffer(@buffer.length - sectionSize);
+      if(start > 0)
+        @buffer.copy newBuffer, 0, 0, start;
+      if end < @buffer.length
+        @buffer.copy newBuffer, end, @buffer.length
+      @buffer = newBuffer;
+    else if start == 0 and end == @buffer.length
+      #console.log "[MemoryManager] setting buffer to null";
+      @buffer = null;
+  slice: (start, end) =>
+    newBufferSize = end - start;
+    #console.log "[MemoryManager] Slice start: #{start} end: #{end} newSize: #{newBufferSize} buffer: #{@buffer.length}"
+    newBuffer = new Buffer(end - start);
+    #console.log "[MemoryManager] #{newBuffer.length}";
+    @buffer.copy newBuffer, 0, start, end
+    #console.log "[MemoryManager] Slice end", newBuffer
+    return newBuffer;
+
   clear: () =>
+    #console.log "[MemoryManager]  Clear";
     @buffer = null;
     @length = 0;
 
@@ -141,7 +158,7 @@ class MemoryManager #: Events.EventEmitter
       bufferIndex = i;
       arrayIndex = i - index;
 
-      console.log " compare: #{@buffer[bufferIndex]}[#{bufferIndex}] ==  #{array[arrayIndex]}[#{arrayIndex}] Length: #{@buffer.length} ";
+      ##console.log " compare: #{@buffer[bufferIndex]}[#{bufferIndex}] ==  #{array[arrayIndex]}[#{arrayIndex}] Length: #{@buffer.length} ";
 
       if @buffer[bufferIndex] != array[arrayIndex]
         return false;
@@ -149,9 +166,11 @@ class MemoryManager #: Events.EventEmitter
 
   getBuffer: () =>
     return @buffer;
+  readInt32: (index) =>
+    return @buffer.readInt32LE(index);
 
 server = new TcpServer()
 server.startListening(6112);
 
 
-console.log("Chat server running at port 6112\n");
+#console.log("Chat server running at port 6112\n");

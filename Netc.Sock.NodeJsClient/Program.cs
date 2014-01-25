@@ -11,22 +11,36 @@ namespace Netc.SockTest
 	{
 
 
-		static SocketClient<string> _client;
+		static SocketClient<DateTime> _client;
 		static void Main(string[] args)
 		{
-			LogManager.OnLog += LogManager_OnLog;
-			_client = new SocketClient<string>();
-			_client.On("response", OnResponse);
-			_client.Connect("127.0.0.1", 6112);
+      LogManager.OnLog += LogManager_OnLog;
+      Console.WriteLine("Waiting to send... Press the enter key to continue -- type 'quit' to quit..");
+      string input = Console.ReadLine();
+      if (input == "quit")
+        return;
+      do
+      {
 
-			_client.Emit("response", "WEEE");
-			Console.ReadLine();
-			_client.Disconnect();
+        _client = new SocketClient<DateTime>();
+        _client.On("response", OnResponse);
+        _client.Connect("127.0.0.1", 6112);
+
+        _client.Emit("response", DateTime.Now);
+        
+        Console.WriteLine("Waiting to send... Press the enter key to continue -- type 'quit' to quit..");
+        input = Console.ReadLine();
+        _client.Disconnect();
+      } while (input != "quit");
 		}
-		static void OnResponse(string[] message)
+    static void OnResponse(DateTime[] message)
 		{
-			LogManager.Info("OnResponse : {0}",  message[0]);
-			_client.Emit("response", "YSYAYS");
+
+      var span = DateTime.Now - message[0];
+
+
+      LogManager.Info("OnResponse : {0}", span.TotalMilliseconds);
+      _client.Emit("response", DateTime.Now);
 		}
 
 		static void LogManager_OnLog(LogManager.LogType type, string message, params object[] objects)
